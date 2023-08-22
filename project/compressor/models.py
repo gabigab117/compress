@@ -25,4 +25,6 @@ class UpImage(models.Model):
     def get_extension(self):
         split_name = self.image.name.split(".")
         ext = split_name[-1]
+        if ext == "jpg":
+            return "JPEG"
         return ext
