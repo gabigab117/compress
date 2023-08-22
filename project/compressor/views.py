@@ -30,6 +30,6 @@ def image_view(request, pk):
         if form.is_valid():
             # manipuler l'image et la rendre en download
             pass
-
-    form = Compress()
-    return render(request, "compressor/image.html", context={"image": image})
+    else:
+        form = Compress()
+    return render(request, "compressor/image.html", context={"image": image, "form": form})
