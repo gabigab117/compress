@@ -40,8 +40,9 @@ def image_view(request, pk):
                 im_io = BytesIO()
                 ext = my_image.get_extension()
                 image.save(im_io, ext.upper(), quality=quality)
-                file_name = my_image.image.name
-                my_image.image.delete(save=False)
+                # ajuste pour ne pas créer des sous dossiers
+                file_name = my_image.adjust_file_name()
+                my_image.image.delete()
                 my_image.image.save(file_name, ContentFile(im_io.getvalue()), save=False)
                 my_image.save()
                 return redirect(my_image)

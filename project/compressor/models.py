@@ -28,3 +28,9 @@ class UpImage(models.Model):
         if ext == "jpg":
             return "JPEG"
         return ext
+
+    def adjust_file_name(self):
+        file_name = self.image.name
+        split_name = file_name.split("/")
+        new_name = split_name[-1]
+        return new_name
