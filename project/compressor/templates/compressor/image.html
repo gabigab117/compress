@@ -4,12 +4,22 @@
 
 {% block body %}
 <div class="container text-center">
-<div class="row">
-    <div class="col">
-<h1>Image</h1>
-<img src="{{ image.image.url }}" width="500" height="auto">
+    <div class="row">
+        <div class="col">
+            <h1>Image</h1>
+            <img src="{{ image.image.url }}" width="500" height="auto">
+        </div>
     </div>
-</div>
+     <div class="row">
+        <div class="col">
+            <h1>Manipulation</h1>
+            <form method="post">
+                {% csrf_token %}
+                <input type="submit" value="Compress !">
+
+            </form>
+        </div>
+    </div>
 </div>
 
 {% endblock %}

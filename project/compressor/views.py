@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from .models import UpImage
-from .forms import UploadImage
+from .forms import UploadImage, Compress
 from PIL import Image
 
 import os
@@ -25,4 +25,11 @@ def up_image(request):
 
 def image_view(request, pk):
     image = UpImage.objects.get(pk=pk)
+    if request.method == "POST":
+        form = Compress(request.POST)
+        if form.is_valid():
+            # manipuler l'image et la rendre en download
+            pass
+
+    form = Compress()
     return render(request, "compressor/image.html", context={"image": image})
