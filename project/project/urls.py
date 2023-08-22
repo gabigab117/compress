@@ -7,7 +7,7 @@ from compressor.views import index
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", index, name="index"),
-    # path('compressor/', include("compressor.urls")),
+    path('compressor/', include("compressor.urls")),
     path('account/', include("accounts.urls")),
 ]
 
