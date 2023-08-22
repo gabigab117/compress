@@ -21,3 +21,8 @@ class UpImage(models.Model):
 
     def get_absolute_url(self):
         return reverse('compressor:image', kwargs={"pk": self.pk})
+
+    def get_extension(self):
+        split_name = self.image.name.split(".")
+        ext = split_name[-1]
+        return ext

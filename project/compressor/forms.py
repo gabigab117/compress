@@ -11,5 +11,5 @@ class UploadImage(forms.ModelForm):
 
 class Compress(forms.Form):
     quality = forms.IntegerField(label="Qualité")
-    width = forms.IntegerField(label="Largeur")
-    height = forms.IntegerField(label="Hauteur")
+    width = forms.IntegerField(label="Largeur", required=False)
+    height = forms.IntegerField(label="Hauteur", required=False)

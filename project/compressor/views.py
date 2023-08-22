@@ -1,10 +1,11 @@
+from django.core.files.base import ContentFile
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from .models import UpImage
 from .forms import UploadImage, Compress
 from PIL import Image
 
-import os
+from io import BytesIO
 
 
 def index(request):
@@ -24,12 +25,24 @@ def up_image(request):
 
 
 def image_view(request, pk):
-    image = UpImage.objects.get(pk=pk)
+    my_image = UpImage.objects.get(pk=pk)
     if request.method == "POST":
         form = Compress(request.POST)
         if form.is_valid():
-            # manipuler l'image et la rendre en download
-            pass
+            # commencer par gérer que la qualité
+            quality = form.cleaned_data["quality"]
+            width = form.cleaned_data["width"]
+            height = form.cleaned_data["height"]
+            if quality:
+                image = Image.open(my_image.image)
+                im_io = BytesIO()
+                ext = my_image.get_extension()
+                image.save(im_io, "JPEG", quality=quality)
+                file_name = my_image.image.name
+                my_image.image.delete(save=False)
+                my_image.image.save(file_name, ContentFile(im_io.getvalue()), save=False)
+                my_image.save()
+
     else:
         form = Compress()
-    return render(request, "compressor/image.html", context={"image": image, "form": form})
+    return render(request, "compressor/image.html", context={"image": my_image, "form": form})
