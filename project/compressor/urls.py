@@ -1,9 +1,9 @@
 from django.urls import path
-from.views import up_image, image_view
+from.views import image_view, premium_upload
 
 
 app_name = "compressor"
 urlpatterns = [
-    path("upimage/", up_image, name="upimage"),
     path("image/<int:pk>/", image_view, name="image"),
+    path("premium/", premium_upload, name="premium")
 ]

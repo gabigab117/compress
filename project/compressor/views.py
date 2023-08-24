@@ -1,6 +1,8 @@
 from django.core.files.base import ContentFile
 from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
+from django.views.generic import FormView
+
 from .models import UpImage
 from .forms import UploadImage, Compress
 from PIL import Image
@@ -9,10 +11,6 @@ from io import BytesIO
 
 
 def index(request):
-    return render(request, "compressor/index.html")
-
-
-def up_image(request):
     if request.method == "POST":
         form = UploadImage(request.POST, request.FILES)
         if form.is_valid():
@@ -21,7 +19,7 @@ def up_image(request):
             return redirect("compressor:image", pk=image.pk)
     else:
         form = UploadImage()
-    return render(request, "compressor/upimage.html", context={"form": form})
+    return render(request, "compressor/index.html", context={"form": form})
 
 
 def image_view(request, pk):
@@ -50,3 +48,18 @@ def image_view(request, pk):
     else:
         form = Compress()
     return render(request, "compressor/image.html", context={"image": my_image, "form": form})
+
+
+def premium_upload(request):
+    user = request.user
+
+    if request.method == "POST":
+        data = request.POST
+        images = request.FILES.getlist("images")
+        print(images)
+        print(data)
+        for image in images:
+            up_image = UpImage.objects.create(image=image, user=user)
+        return redirect("index")
+
+    return render(request, "compressor/premium.html")

@@ -2,6 +2,7 @@ from django import forms
 from .models import UpImage
 
 
+# Formulaire basique
 class UploadImage(forms.ModelForm):
 
     class Meta:
