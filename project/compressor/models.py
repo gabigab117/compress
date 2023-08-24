@@ -1,12 +1,8 @@
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.text import slugify
 
 from project.settings import AUTH_USER_MODEL
-
-from PIL import Image
-import datetime
 
 
 class UpImage(models.Model):
