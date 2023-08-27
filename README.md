@@ -1,2 +1,2 @@
 # compress
-- premium
+- uploader les images avec une compression ?

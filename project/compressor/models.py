@@ -11,6 +11,10 @@ class UpImage(models.Model):
                              verbose_name="Utilisateur", null=True, blank=True)
     published = models.DateField(null=True)
     expire = models.DateField(null=True)
+    archived = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-published"]
 
     def __str__(self):
         return f"{self.user} - {self.published}"
@@ -18,7 +22,8 @@ class UpImage(models.Model):
     def save(self, *args, **kwargs):
         if not self.published:
             self.published = timezone.now()
-        self.expire = self.published + timezone.timedelta(days=1)
+        if not self.user:
+            self.expire = self.published + timezone.timedelta(days=1)
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
