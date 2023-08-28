@@ -111,8 +111,12 @@ def compress_images_premium(request):
 
         for form in formset:
             quality = form.cleaned_data["quality"]
+            width = form.cleaned_data["width"]
+            height = form.cleaned_data["height"]
             my_image = form.instance
             image = Image.open(form.instance.image)
+            if width and height:
+                image.thumbnail((width, height))
             im_io = BytesIO()
             ext = my_image.get_extension()
             image.save(im_io, ext.upper(), quality=quality)
