@@ -59,11 +59,19 @@ def premium_upload(request):
         data = request.POST
         images = request.FILES.getlist("images")
         quality = request.POST.get("quality")
+        width = request.POST.get("width")
+        height = request.POST.get("height")
         for image in images:
             my_image = UpImage.objects.create(image=image, user=user)
             if quality:
                 quality = int(quality)
                 image = Image.open(my_image.image)
+
+                if width and height:
+                    width = int(width)
+                    height = int(height)
+                    image.thumbnail((width, height))
+
                 im_io = BytesIO()
                 ext = my_image.get_extension()
                 image.save(im_io, ext.upper(), quality=quality)
@@ -71,7 +79,11 @@ def premium_upload(request):
                 file_name = my_image.adjust_file_name()
                 my_image.image.delete()
                 my_image.image.save(file_name, ContentFile(im_io.getvalue()), save=False)
+                my_image.archived = True
                 my_image.save()
+
+        if quality:
+            return redirect("compressor:all-premium-images")
         return redirect("compressor:premium-images")
 
     return render(request, "compressor/premium.html")
