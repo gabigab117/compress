@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Souscription{% endblock %}
+
+{% block body %}
+<div class="container text-center">
+    <div class="row">
+        <div class="col">
+
+
+            <form method="post" action="{% url 'compressor:create-checkout-session' %}">
+                {% csrf_token %}
+                <input type="submit" value="Devenir premium" class="btn btn-success">
+            </form>
+
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,15 +1,25 @@
 from django.core.files.base import ContentFile
 from django.forms import modelformset_factory
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView
+from accounts.models import CustomUser
 
 from .models import UpImage
 from .forms import UploadImage, Compress, PremiumForm
+from project.settings import STRIPE_KEY
+
 from PIL import Image
 
 from io import BytesIO
+
+import stripe
+import os
+
+
+stripe.api_key = STRIPE_KEY
 
 
 def index(request):
@@ -134,3 +144,77 @@ def all_premium_images(request):
     user = request.user
     images = UpImage.objects.filter(user=user, archived=True)
     return render(request, "compressor/all-images.html", context={"images": images})
+
+
+def subscription_view(request):
+    return render(request, "compressor/subscription.html")
+
+
+def create_checkout_session(request):
+    checkout_data = {
+        "locale": "fr",
+        "line_items": [{
+            'price_data': {
+                'currency': 'eur',
+                'product_data': {
+                    'name': "Abonnement",
+                },
+                'unit_amount': 2000,
+            },
+            'quantity': 1,
+        }],
+        # "automatic_tax": {'enabled': True},
+        "mode": 'payment',
+        "invoice_creation": {"enabled": True},
+        "shipping_address_collection": {"allowed_countries": ["FR", "BE"]},
+        "success_url": request.build_absolute_uri(reverse("compressor:checkout-success")),
+        "cancel_url": 'http://127.0.0.1:8000'}
+
+    if request.user.stripe_id:
+        checkout_data["customer"] = request.user.stripe_id
+    else:
+        checkout_data["customer_email"] = request.user.email
+        checkout_data["customer_creation"] = "always"
+
+    session = stripe.checkout.Session.create(**checkout_data)
+
+    return redirect(session.url, code=303)
+
+
+def checkout_success(request):
+    return render(request, "compressor/success.html")
+
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    # Penser à renseigner une clé pour la prod
+    endpoint_secret = os.environ.get("endpoint_secret")
+    event = None
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
+
+    # Handle the event
+    if event.type == 'checkout.session.completed':
+        data = event['data']['object']
+
+        user = get_object_or_404(CustomUser, email=data['customer_details']['email'])
+
+        user.premium = True
+        user.save()
+
+        if not user.stripe_id:
+            user.stripe_id = data["customer"]
+            user.save()
+
+    return HttpResponse(status=200)
