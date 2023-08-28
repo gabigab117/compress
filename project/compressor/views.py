@@ -105,6 +105,7 @@ def premium_upload(request):
     return render(request, "compressor/premium.html")
 
 
+@user_passes_test(user_is_premium, login_url="compressor:subscription")
 def premium_images_view(request):
     user = request.user
     images = UpImage.objects.filter(user=user, archived=False)
@@ -146,6 +147,7 @@ def compress_images_premium(request):
     return redirect("compressor:all-premium-images")
 
 
+@user_passes_test(user_is_premium, login_url="compressor:subscription")
 def all_premium_images(request):
     user = request.user
     images = UpImage.objects.filter(user=user, archived=True)
