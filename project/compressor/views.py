@@ -1,10 +1,10 @@
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.files.base import ContentFile
 from django.forms import modelformset_factory
 from django.http import Http404, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import FormView
 from accounts.models import CustomUser
 
 from .models import UpImage
@@ -62,6 +62,12 @@ def image_view(request, pk):
     return render(request, "compressor/image.html", context={"image": my_image, "form": form})
 
 
+# L'utilisateur est-il premium ?
+def user_is_premium(user):
+    return user.premium
+
+
+@user_passes_test(user_is_premium, login_url="compressor:subscription")
 def premium_upload(request):
     user = request.user
 
@@ -146,6 +152,7 @@ def all_premium_images(request):
     return render(request, "compressor/all-images.html", context={"images": images})
 
 
+@login_required
 def subscription_view(request):
     return render(request, "compressor/subscription.html")
 
