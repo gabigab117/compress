@@ -43,6 +43,7 @@ def user_logout(request):
 @login_required
 def profile(request):
     user = request.user
+
     if user.stripe_sub_id:
         stripe_api_key = STRIPE_KEY
         subscription = stripe.Subscription.retrieve(user.stripe_sub_id)
