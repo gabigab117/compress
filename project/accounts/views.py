@@ -43,15 +43,15 @@ def user_logout(request):
 @login_required
 def profile(request):
     user = request.user
-    try:
+    if user.stripe_sub_id:
         stripe_api_key = STRIPE_KEY
         subscription = stripe.Subscription.retrieve(user.stripe_sub_id)
         product = stripe.Product.retrieve(subscription.plan.product)
         return render(request, 'accounts/profile.html', context={'subscription': subscription,
                                                                  'product': product})
 
-    except user.stripe_sub_id.DoesNotExist:
-        return render(request, "accounts/profile.html", context={})
+    else:
+        return render(request, "accounts/profile.html")
 
 
 

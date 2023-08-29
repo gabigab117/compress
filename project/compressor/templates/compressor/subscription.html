@@ -7,12 +7,14 @@
     <div class="row">
         <div class="col">
 
-
+            {% if not subscription.status == "active" %}
             <form method="post" action="{% url 'compressor:create-checkout-session' %}">
                 {% csrf_token %}
                 <input type="submit" value="Devenir premium" class="btn btn-success">
             </form>
-
+{% else %}
+            <p>Vous possédez un abonnement</p>
+            {% endif %}
 
         </div>
     </div>

@@ -165,14 +165,22 @@ def all_premium_images(request):
 
 @login_required
 def subscription_view(request):
-    return render(request, "compressor/subscription.html")
+    user = request.user
+
+    if user.stripe_sub_id:
+        subscription = stripe.Subscription.retrieve(user.stripe_sub_id)
+        product = stripe.Product.retrieve(subscription.plan.product)
+        return render(request, "compressor/subscription.html", context={'subscription': subscription,
+                                                                        'product': product})
+
+    else:
+        return render(request, "compressor/subscription.html")
 
 
 def create_checkout_session(request):
     checkout_data = {
         "locale": "fr",
         "line_items": [{'price': STRIPE_PRICE_ID, 'quantity': 1}],
-        # "automatic_tax": {'enabled': True},
         "mode": 'subscription',
         "shipping_address_collection": {"allowed_countries": ["FR", "BE"]},
         "success_url": request.build_absolute_uri(reverse("compressor:checkout-success")),
