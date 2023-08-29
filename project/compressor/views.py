@@ -221,8 +221,7 @@ def stripe_webhook(request):
             user.stripe_id = data["customer"]
             user.save()
 
-        if not user.stripe_sub_id:
-            user.stripe_sub_id = data["subscription"]
-            user.save()
+        user.stripe_sub_id = data["subscription"]
+        user.save()
 
     return HttpResponse(status=200)
