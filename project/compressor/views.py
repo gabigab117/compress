@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from accounts.models import CustomUser
 
 from .models import UpImage
-from .forms import UploadImage, Compress, PremiumForm
+from .forms import UploadImage, Compress, PremiumForm, PremiumDeleteForm
 from project.settings import STRIPE_KEY
 
 from PIL import Image
@@ -151,7 +151,16 @@ def compress_images_premium(request):
 def all_premium_images(request):
     user = request.user
     images = UpImage.objects.filter(user=user, archived=True)
-    return render(request, "compressor/all-images.html", context={"images": images})
+    DelFormSet = modelformset_factory(UpImage, form=PremiumDeleteForm, extra=0)
+    formset = DelFormSet(queryset=images)
+
+    if request.method == "POST":
+        formset = DelFormSet(request.POST, queryset=images)
+        if formset.is_valid:
+            formset.save()
+            return redirect("compressor:all-premium-images")
+
+    return render(request, "compressor/all-images.html", context={"images": images, "forms": formset})
 
 
 @login_required

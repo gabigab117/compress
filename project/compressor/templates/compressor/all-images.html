@@ -6,20 +6,33 @@
 <div class="container text-center">
     <div class="row">
         {% if images %}
-        {% for image in images %}
-        <div class="col-4" style="margin-bottom: 20px;">
-            <img src="{{ image.image.url }}" style="max-width: 200px;">
-
-        </div>
-        {% endfor %}
-        {% else %}
         <div class="col">
 
-            <p>Vous n'avez pas encore d'images archivées !</p>
+
+            <form method="post" action="{% url 'compressor:all-premium-images' %}">
+                {% csrf_token %}
+                {{ forms.management_form }}
+
+                {% for form in forms %}
+
+                <img src="{{ form.instance.image.url }}" style="max-width: 500px; margin-bottom: 20px;">
+                {{ form.as_p }}
+                {% endfor %}
+
+                <button type="submit" class="btn btn-danger">Supprimer</button>
+
+            </form>
+
+        </div>
+        {% else %}
+        <div class="col">
+            <p>Vous n'avez pas encore d'images archivées</p>
+
+
         </div>
         {% endif %}
-    </div>
 
+    </div>
 
 
 </div>

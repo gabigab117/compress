@@ -27,3 +27,18 @@ class PremiumForm(forms.ModelForm):
     class Meta:
         model = UpImage
         fields = ["quality", "width", "height"]
+
+
+class PremiumDeleteForm(forms.ModelForm):
+    delete = forms.BooleanField(initial=False, required=False, label="Supprimer")
+
+    class Meta:
+        model = UpImage
+        fields = ["delete"]
+
+    def save(self, *args, **kwargs):
+        if self.cleaned_data["delete"]:
+            self.instance.delete()
+            # Stopper la méthode pour ne pas sauvegarder avec un return
+            return True
+        return super().save(*args, **kwargs)
