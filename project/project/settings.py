@@ -136,3 +136,4 @@ AUTH_USER_MODEL = "accounts.CustomUser"
 LOGIN_URL = "accounts:login"
 
 STRIPE_KEY = env('STRIPE_KEY')
+STRIPE_PRICE_ID = "price_1NkYeCBXGADKSeta05tzGXdC"

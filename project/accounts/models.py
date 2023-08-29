@@ -25,8 +25,8 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
-    premium = models.BooleanField(default=False)
     stripe_id = models.CharField(max_length=200, blank=True)
+    stripe_sub_id = models.CharField(max_length=200, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]

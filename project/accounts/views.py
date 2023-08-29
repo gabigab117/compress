@@ -1,6 +1,10 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .forms import CustomCreationForm
+from .models import CustomUser
+from project.settings import STRIPE_KEY
+import stripe
 
 
 def signup(request):
@@ -34,3 +38,21 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect("index")
+
+
+@login_required
+def profile(request):
+    user = request.user
+    try:
+        stripe_api_key = STRIPE_KEY
+        subscription = stripe.Subscription.retrieve(user.stripe_sub_id)
+        product = stripe.Product.retrieve(subscription.plan.product)
+        return render(request, 'accounts/profile.html', context={'subscription': subscription,
+                                                                 'product': product})
+
+    except user.stripe_sub_id.DoesNotExist:
+        return render(request, "accounts/profile.html", context={})
+
+
+
+

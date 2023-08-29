@@ -9,7 +9,7 @@ from accounts.models import CustomUser
 
 from .models import UpImage
 from .forms import UploadImage, Compress, PremiumForm, PremiumDeleteForm
-from project.settings import STRIPE_KEY
+from project.settings import STRIPE_KEY, STRIPE_PRICE_ID
 
 from PIL import Image
 
@@ -62,12 +62,12 @@ def image_view(request, pk):
     return render(request, "compressor/image.html", context={"image": my_image, "form": form})
 
 
-# L'utilisateur est-il premium ?
-def user_is_premium(user):
-    return user.premium
+def user_has_sub(user):
+    subscription = stripe.Subscription.retrieve(user.stripe_sub_id)
+    return subscription.status == "active"
 
 
-@user_passes_test(user_is_premium, login_url="compressor:subscription")
+@user_passes_test(user_has_sub, login_url="compressor:subscription")
 def premium_upload(request):
     user = request.user
 
@@ -105,7 +105,7 @@ def premium_upload(request):
     return render(request, "compressor/premium.html")
 
 
-@user_passes_test(user_is_premium, login_url="compressor:subscription")
+@user_passes_test(user_has_sub, login_url="compressor:subscription")
 def premium_images_view(request):
     user = request.user
     images = UpImage.objects.filter(user=user, archived=False)
@@ -147,7 +147,7 @@ def compress_images_premium(request):
     return redirect("compressor:all-premium-images")
 
 
-@user_passes_test(user_is_premium, login_url="compressor:subscription")
+@user_passes_test(user_has_sub, login_url="compressor:subscription")
 def all_premium_images(request):
     user = request.user
     images = UpImage.objects.filter(user=user, archived=True)
@@ -171,19 +171,9 @@ def subscription_view(request):
 def create_checkout_session(request):
     checkout_data = {
         "locale": "fr",
-        "line_items": [{
-            'price_data': {
-                'currency': 'eur',
-                'product_data': {
-                    'name': "Abonnement",
-                },
-                'unit_amount': 2000,
-            },
-            'quantity': 1,
-        }],
+        "line_items": [{'price': STRIPE_PRICE_ID, 'quantity': 1}],
         # "automatic_tax": {'enabled': True},
-        "mode": 'payment',
-        "invoice_creation": {"enabled": True},
+        "mode": 'subscription',
         "shipping_address_collection": {"allowed_countries": ["FR", "BE"]},
         "success_url": request.build_absolute_uri(reverse("compressor:checkout-success")),
         "cancel_url": 'http://127.0.0.1:8000'}
@@ -192,7 +182,6 @@ def create_checkout_session(request):
         checkout_data["customer"] = request.user.stripe_id
     else:
         checkout_data["customer_email"] = request.user.email
-        checkout_data["customer_creation"] = "always"
 
     session = stripe.checkout.Session.create(**checkout_data)
 
@@ -228,11 +217,12 @@ def stripe_webhook(request):
 
         user = get_object_or_404(CustomUser, email=data['customer_details']['email'])
 
-        user.premium = True
-        user.save()
-
         if not user.stripe_id:
             user.stripe_id = data["customer"]
+            user.save()
+
+        if not user.stripe_sub_id:
+            user.stripe_sub_id = data["subscription"]
             user.save()
 
     return HttpResponse(status=200)
