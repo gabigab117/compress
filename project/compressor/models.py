@@ -1,8 +1,11 @@
+import stripe
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 
-from project.settings import AUTH_USER_MODEL
+from project.settings import AUTH_USER_MODEL, STRIPE_KEY
+
+stripe_key = STRIPE_KEY
 
 
 class UpImage(models.Model):
@@ -19,10 +22,18 @@ class UpImage(models.Model):
     def __str__(self):
         return f"{self.user} - {self.published}"
 
+    def user_has_subscription(self):
+        if self.user.stripe_sub_id:
+            subscription = stripe.Subscription.retrieve(self.user.stripe_sub_id)
+            return subscription.status == "active"
+        return False
+
     def save(self, *args, **kwargs):
         if not self.published:
             self.published = timezone.now()
-        if not self.user:
+
+        if not self.user or not self.user_has_subscription():
+            # Si utilisateur sans abonnement : False or True == True
             self.expire = self.published + timezone.timedelta(days=1)
         super().save(*args, **kwargs)
 
