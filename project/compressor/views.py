@@ -18,7 +18,6 @@ from io import BytesIO
 import stripe
 import os
 
-
 stripe.api_key = STRIPE_KEY
 
 
@@ -26,7 +25,12 @@ def index(request):
     if request.method == "POST":
         form = UploadImage(request.POST, request.FILES)
         if form.is_valid():
-            image = form.save()
+            image = form.save(commit=False)
+            if request.user.is_authenticated:
+                image.user = request.user
+                if image.user_has_subscription():
+                    image.archived = True
+            image.save()
 
             return redirect("compressor:image", pk=image.pk)
     else:
