@@ -63,8 +63,10 @@ def image_view(request, pk):
 
 
 def user_has_sub(user):
-    subscription = stripe.Subscription.retrieve(user.stripe_sub_id)
-    return subscription.status == "active"
+    if user.stripe_sub_id:
+        subscription = stripe.Subscription.retrieve(user.stripe_sub_id)
+        return subscription.status == "active"
+    return False
 
 
 @user_passes_test(user_has_sub, login_url="compressor:subscription")
