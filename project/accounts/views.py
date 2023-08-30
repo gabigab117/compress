@@ -1,14 +1,17 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import Http404
 from django.shortcuts import render, redirect
 from .forms import CustomCreationForm
-from .models import CustomUser
 from project.settings import STRIPE_KEY
 import stripe
 
 
-def signup(request):
+stripe_api_key = STRIPE_KEY
 
+
+def signup(request):
     if request.method == "POST":
         form = CustomCreationForm(request.POST)
         if form.is_valid():
@@ -45,7 +48,6 @@ def profile(request):
     user = request.user
 
     if user.stripe_sub_id:
-        stripe_api_key = STRIPE_KEY
         subscription = stripe.Subscription.retrieve(user.stripe_sub_id)
         product = stripe.Product.retrieve(subscription.plan.product)
         return render(request, 'accounts/profile.html', context={'subscription': subscription,
@@ -55,5 +57,13 @@ def profile(request):
         return render(request, "accounts/profile.html")
 
 
+def cancel_subscription(request):
+    if request.method != "POST":
+        raise Http404("Requête invalide")
 
+    user = request.user
+    stripe.Subscription.delete(user.stripe_sub_id)
 
+    messages.add_message(request, messages.INFO, "Votre abonnement a bien été annulé")
+
+    return redirect("index")

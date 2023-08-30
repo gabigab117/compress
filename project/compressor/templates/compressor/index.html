@@ -13,6 +13,13 @@
                 <input type="submit" value="Uploader" class="btn btn-success">
             </form>
 
+            {% if messages %}
+
+            {% for message in messages %}
+            <h2 style="color: RED;">{{ message }}</h2>
+            {% endfor %}
+
+            {% endif %}
 
         </div>
     </div>

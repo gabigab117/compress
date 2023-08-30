@@ -97,7 +97,7 @@ def premium_upload(request):
                 im_io = BytesIO()
                 ext = my_image.get_extension()
                 image.save(im_io, ext.upper(), quality=quality)
-                # ajuste pour ne pas créer des sous dossiers
+                # Ajuste pour ne pas créer des sous dossiers
                 file_name = my_image.adjust_file_name()
                 my_image.image.delete()
                 my_image.image.save(file_name, ContentFile(im_io.getvalue()), save=False)
@@ -131,7 +131,6 @@ def compress_images_premium(request):
     formset = UpFormSet(request.POST, queryset=images)
 
     if formset.is_valid():
-
         for form in formset:
             quality = form.cleaned_data["quality"]
             width = form.cleaned_data["width"]

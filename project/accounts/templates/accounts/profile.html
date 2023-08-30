@@ -8,6 +8,13 @@
         <div class="col">
             {% if subscription.status == "active" %}
             {{ product.name }}
+
+            <form method="post" action="{% url 'accounts:cancel' %}">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-outline-success" value="Se désabonner">
+
+            </form>
+
             {% else %}
             <p>Pas d'abonnement en cours</p>
             {% endif %}
