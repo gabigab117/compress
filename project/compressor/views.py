@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.files.base import ContentFile
 from django.forms import modelformset_factory
@@ -9,7 +10,7 @@ from accounts.models import CustomUser
 
 from .models import UpImage
 from .forms import UploadImage, Compress, PremiumForm, PremiumDeleteForm
-from project.settings import STRIPE_KEY, STRIPE_PRICE_ID
+from project.settings import STRIPE_KEY, STRIPE_PRICE_ID, AUTH_EXT
 
 from PIL import Image
 
@@ -24,12 +25,20 @@ stripe.api_key = STRIPE_KEY
 def index(request):
     if request.method == "POST":
         form = UploadImage(request.POST, request.FILES)
+
         if form.is_valid():
             image = form.save(commit=False)
+
+            ext = image.get_extension()
+            if ext not in AUTH_EXT:
+                messages.add_message(request, messages.ERROR, "Seul les formats JPEG et png sont acceptés")
+                return redirect("index")
+
             if request.user.is_authenticated:
                 image.user = request.user
                 if image.user_has_subscription():
                     image.archived = True
+
             image.save()
 
             return redirect("compressor:image", pk=image.pk)
@@ -40,6 +49,7 @@ def index(request):
 
 def image_view(request, pk):
     my_image = UpImage.objects.get(pk=pk)
+
     if request.method == "POST":
         form = Compress(request.POST)
         if form.is_valid():
@@ -47,13 +57,20 @@ def image_view(request, pk):
             quality = form.cleaned_data["quality"]
             width = form.cleaned_data["width"]
             height = form.cleaned_data["height"]
+
             if quality:
                 image = Image.open(my_image.image)
                 if width and height:
                     image.thumbnail((width, height))
+
                 im_io = BytesIO()
+
                 ext = my_image.get_extension()
-                image.save(im_io, ext.upper(), quality=quality)
+                if ext != "JPEG":
+                    image.save(im_io, "JPEG", quality=quality)
+                else:
+                    image.save(im_io, ext.upper(), quality=quality)
+
                 # ajuste pour ne pas créer des sous dossiers
                 file_name = my_image.adjust_file_name()
                 my_image.image.delete()
@@ -83,8 +100,16 @@ def premium_upload(request):
         quality = request.POST.get("quality")
         width = request.POST.get("width")
         height = request.POST.get("height")
+
         for image in images:
             my_image = UpImage.objects.create(image=image, user=user)
+            ext = my_image.get_extension()
+
+            if ext not in AUTH_EXT:
+                messages.add_message(request, messages.ERROR, "Seul les formats JPEG et png sont acceptés")
+                my_image.delete()
+                continue
+
             if quality:
                 quality = int(quality)
                 image = Image.open(my_image.image)
@@ -96,7 +121,11 @@ def premium_upload(request):
 
                 im_io = BytesIO()
                 ext = my_image.get_extension()
-                image.save(im_io, ext.upper(), quality=quality)
+                if ext != "JPEG":
+                    image.save(im_io, "JPEG", quality=quality)
+                else:
+                    image.save(im_io, ext.upper(), quality=quality)
+
                 # Ajuste pour ne pas créer des sous dossiers
                 file_name = my_image.adjust_file_name()
                 my_image.image.delete()
@@ -137,11 +166,18 @@ def compress_images_premium(request):
             height = form.cleaned_data["height"]
             my_image = form.instance
             image = Image.open(form.instance.image)
+
             if width and height:
                 image.thumbnail((width, height))
+
             im_io = BytesIO()
+
             ext = my_image.get_extension()
-            image.save(im_io, ext.upper(), quality=quality)
+            if ext != "JPEG":
+                image.save(im_io, "JPEG", quality=quality)
+            else:
+                image.save(im_io, ext.upper(), quality=quality)
+
             # ajuste pour ne pas créer des sous dossiers
             file_name = my_image.adjust_file_name()
             my_image.image.delete()
