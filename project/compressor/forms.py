@@ -28,14 +28,6 @@ class PremiumForm(forms.ModelForm):
         model = UpImage
         fields = ["quality", "width", "height"]
 
-    def clean(self):
-        cleaned_data = super().clean()
-        quality = cleaned_data.get("quality")
-        if not quality:
-            raise forms.ValidationError("Il faut renseigner une qualité")
-
-        return cleaned_data
-
 
 class PremiumDeleteForm(forms.ModelForm):
     delete = forms.BooleanField(initial=False, required=False, label="Supprimer")
