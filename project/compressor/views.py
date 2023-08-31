@@ -147,45 +147,39 @@ def premium_images_view(request):
     # Je crée une classe depuis le formsetfactory
     UpFormSet = modelformset_factory(UpImage, form=PremiumForm, extra=0)
     formset = UpFormSet(queryset=images)
+
+    if request.method == "POST":
+        formset = UpFormSet(request.POST, queryset=images)
+        print(formset.errors)
+        if formset.is_valid():
+            for form in formset:
+                quality = form.cleaned_data["quality"]
+                width = form.cleaned_data["width"]
+                height = form.cleaned_data["height"]
+                my_image = form.instance
+                image = Image.open(form.instance.image)
+
+                if width and height:
+                    image.thumbnail((width, height))
+
+                im_io = BytesIO()
+
+                ext = my_image.get_extension()
+                if ext != "JPEG":
+                    image.save(im_io, "JPEG", quality=quality)
+                else:
+                    image.save(im_io, ext.upper(), quality=quality)
+
+                # ajuste pour ne pas créer des sous dossiers
+                file_name = my_image.adjust_file_name()
+                my_image.image.delete()
+                my_image.image.save(file_name, ContentFile(im_io.getvalue()), save=False)
+                my_image.archived = True
+                my_image.save()
+
+            return redirect("compressor:all-premium-images")
+
     return render(request, "compressor/images-premium.html", context={"forms": formset})
-
-
-def compress_images_premium(request):
-    if request.method != "POST":
-        raise Http404("Requête invalide")
-
-    user = request.user
-    images = UpImage.objects.filter(user=user, archived=False)
-    UpFormSet = modelformset_factory(UpImage, form=PremiumForm, extra=0)
-    formset = UpFormSet(request.POST, queryset=images)
-
-    if formset.is_valid():
-        for form in formset:
-            quality = form.cleaned_data["quality"]
-            width = form.cleaned_data["width"]
-            height = form.cleaned_data["height"]
-            my_image = form.instance
-            image = Image.open(form.instance.image)
-
-            if width and height:
-                image.thumbnail((width, height))
-
-            im_io = BytesIO()
-
-            ext = my_image.get_extension()
-            if ext != "JPEG":
-                image.save(im_io, "JPEG", quality=quality)
-            else:
-                image.save(im_io, ext.upper(), quality=quality)
-
-            # ajuste pour ne pas créer des sous dossiers
-            file_name = my_image.adjust_file_name()
-            my_image.image.delete()
-            my_image.image.save(file_name, ContentFile(im_io.getvalue()), save=False)
-            my_image.archived = True
-            my_image.save()
-
-    return redirect("compressor:all-premium-images")
 
 
 @user_passes_test(user_has_sub, login_url="compressor:subscription")

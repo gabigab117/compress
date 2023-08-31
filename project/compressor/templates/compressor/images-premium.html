@@ -8,13 +8,15 @@
     <div class="row">
         <div class="col">
             <h1>Images</h1>
-            <form method="post" action="{% url 'compressor:compress-images-premium' %}">
+            <form method="post" action="{% url 'compressor:premium-images' %}">
                 {% csrf_token %}
                 {{ forms.management_form }}
 
                 {% for form in forms %}
                 <img src="{{ form.instance.image.url }}" style="max-width: 500px; margin-bottom: 20px;">
                 {{ form.as_p }}
+
+
                 {% endfor %}
 
                 <button class="btn btn-success" type="submit">Compress !</button>
@@ -29,6 +31,7 @@
             {% endfor %}
 
             {% endif %}
+
 
         </div>
     </div>
