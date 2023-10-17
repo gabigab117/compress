@@ -150,7 +150,7 @@ def premium_images_view(request):
 
     if request.method == "POST":
         formset = UpFormSet(request.POST, queryset=images)
-        print(formset.errors)
+
         if formset.is_valid():
             for form in formset:
                 quality = form.cleaned_data["quality"]
