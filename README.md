@@ -7,6 +7,9 @@ Je dois prendre le temps de faire un refactoring sur ce projet.
 
 Mais désormais, je découpe la logique métier dans des méthodes.
 
+Je dois aussi repenser le côté sécurité que je n'appréhendais pas forcément de la bonne manière à l'époque de ce projet.
+Evidemment depuis je pense toujours au volet sécurité de mes apps.
+
 ## Résumé
 
 Un compresseur d'image ou ... d'images ! (Selon si le compte est premium)
