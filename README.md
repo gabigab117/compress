@@ -1,5 +1,12 @@
 # Projet Docstring (Aout 2023)
 
+## Refactoring à faire
+
+A l'époque où j'ai réalisé ce projet, je ne séparais pas encore la logique métier dans des méthodes et fonctions.
+Je dois prendre le temps de faire un refactoring sur ce projet.
+
+Mais désormais, je découpe la logique métier dans des méthodes.
+
 ## Résumé
 
 Un compresseur d'image ou ... d'images ! (Selon si le compte est premium)
