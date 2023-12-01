@@ -24,9 +24,8 @@ def index(request):
         if form.is_valid():
             image = form.save(commit=False)
 
-            ext = image.get_extension()
-            if ext not in AUTH_EXT:
-                messages.add_message(request, messages.ERROR, "Seul les formats JPEG et png sont acceptés")
+            exclude = image.format_exclusion(request)
+            if exclude:
                 return redirect("index")
 
             if request.user.is_authenticated:
@@ -79,16 +78,14 @@ def premium_upload(request):
 
         for image in images:
             my_image = UpImage.objects.create(image=image, user=user)
-            ext = my_image.get_extension()
 
-            if ext not in AUTH_EXT:
-                messages.add_message(request, messages.ERROR, "Seul les formats JPEG et png sont acceptés")
+            exclude = my_image.format_exclusion(request)
+            if exclude:
                 my_image.delete()
                 continue
 
             if quality:
-                quality = int(quality)
-                my_image.compress_image(quality, width, height)
+                my_image.compress_image(int(quality), width, height)
                 my_image.archive_image()
 
         if quality:
