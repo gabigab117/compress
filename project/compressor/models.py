@@ -1,9 +1,14 @@
+from io import BytesIO
+
 import stripe
+from django.core.files.base import ContentFile
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 
 from project.settings import AUTH_USER_MODEL, STRIPE_KEY
+
+from PIL import Image
 
 stripe_key = STRIPE_KEY
 
@@ -52,3 +57,21 @@ class UpImage(models.Model):
         split_name = file_name.split("/")
         new_name = split_name[-1]
         return new_name
+
+    def compress_image(self, quality, width, height):
+        image = Image.open(self.image)
+        if width and height:
+            image.thumbnail((width, height))
+        im_io = BytesIO()
+        ext = self.get_extension()
+        if image.mode == "RGBA" and ext != "PNG":
+            image = image.convert("RGB")
+        if ext != "JPEG":
+            image.save(im_io, "JPEG", quality=quality)
+        else:
+            image.save(im_io, ext.upper(), quality=quality)
+        # ajuste pour ne pas créer des sous dossiers
+        file_name = self.adjust_file_name()
+        self.image.delete()
+        self.image.save(file_name, ContentFile(im_io.getvalue()), save=False)
+        self.save()

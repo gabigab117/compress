@@ -61,9 +61,6 @@ def cancel_subscription(request):
     if request.method != "POST":
         raise Http404("Requête invalide")
 
-    user = request.user
-    stripe.Subscription.delete(user.stripe_sub_id)
-
-    messages.add_message(request, messages.INFO, "Votre abonnement a bien été annulé")
+    request.user.cancel_stripe_subscription(request)
 
     return redirect("index")

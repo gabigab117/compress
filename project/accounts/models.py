@@ -1,3 +1,5 @@
+import stripe
+from django.contrib import messages
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -31,3 +33,7 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
     objects = CustomUserManager()
+
+    def cancel_stripe_subscription(self, request):
+        stripe.Subscription.delete(self.stripe_sub_id)
+        messages.add_message(request, messages.INFO, "Votre abonnement a bien été annulé")

@@ -53,30 +53,12 @@ def image_view(request, pk):
     if request.method == "POST":
         form = Compress(request.POST)
         if form.is_valid():
-            # commencer par gérer que la qualité
             quality = form.cleaned_data["quality"]
             width = form.cleaned_data["width"]
             height = form.cleaned_data["height"]
 
-            if quality:
-                image = Image.open(my_image.image)
-                if width and height:
-                    image.thumbnail((width, height))
-
-                im_io = BytesIO()
-
-                ext = my_image.get_extension()
-                if ext != "JPEG":
-                    image.save(im_io, "JPEG", quality=quality)
-                else:
-                    image.save(im_io, ext.upper(), quality=quality)
-
-                # ajuste pour ne pas créer des sous dossiers
-                file_name = my_image.adjust_file_name()
-                my_image.image.delete()
-                my_image.image.save(file_name, ContentFile(im_io.getvalue()), save=False)
-                my_image.save()
-                return redirect(my_image)
+            my_image.compress_image(quality, width, height)
+            return redirect(my_image)
 
     else:
         form = Compress()
@@ -95,7 +77,6 @@ def premium_upload(request):
     user = request.user
 
     if request.method == "POST":
-        data = request.POST
         images = request.FILES.getlist("images")
         quality = request.POST.get("quality")
         width = request.POST.get("width")
