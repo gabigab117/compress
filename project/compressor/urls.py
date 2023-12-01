@@ -1,7 +1,6 @@
 from django.urls import path
-from.views import (image_view, premium_upload, premium_images_view, all_premium_images,
-                   subscription_view, create_checkout_session, checkout_success, stripe_webhook)
-
+from .views import (image_view, premium_upload, premium_images_view, all_premium_images,
+                    subscription_view, create_checkout_session, checkout_success, stripe_webhook)
 
 app_name = "compressor"
 urlpatterns = [
