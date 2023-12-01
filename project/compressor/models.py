@@ -70,8 +70,12 @@ class UpImage(models.Model):
             image.save(im_io, "JPEG", quality=quality)
         else:
             image.save(im_io, ext.upper(), quality=quality)
-        # ajuste pour ne pas créer des sous dossiers
+
         file_name = self.adjust_file_name()
         self.image.delete()
         self.image.save(file_name, ContentFile(im_io.getvalue()), save=False)
+        self.save()
+
+    def archive_image(self):
+        self.archived = True
         self.save()
