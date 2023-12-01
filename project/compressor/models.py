@@ -1,12 +1,13 @@
 from io import BytesIO
 
 import stripe
+from django.contrib import messages
 from django.core.files.base import ContentFile
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 
-from project.settings import AUTH_USER_MODEL, STRIPE_KEY
+from project.settings import AUTH_USER_MODEL, STRIPE_KEY, AUTH_EXT
 
 from PIL import Image
 
@@ -61,7 +62,7 @@ class UpImage(models.Model):
     def compress_image(self, quality, width, height):
         image = Image.open(self.image)
         if width and height:
-            image.thumbnail((width, height))
+            image.thumbnail((int(width), int(height)))
         im_io = BytesIO()
         ext = self.get_extension()
         if image.mode == "RGBA" and ext != "PNG":
@@ -79,3 +80,9 @@ class UpImage(models.Model):
     def archive_image(self):
         self.archived = True
         self.save()
+
+    def format_exclusion(self, request):
+        ext = self.get_extension()
+        if ext not in AUTH_EXT:
+            messages.add_message(request, messages.ERROR, "Seul les formats JPEG et png sont acceptés")
+            return True
