@@ -54,12 +54,30 @@ class UpImage(models.Model):
         return ext
 
     def adjust_file_name(self):
+        """Extracts and returns the base name of the image file.
+
+           Splits the full file path and retrieves just the file name.
+
+           Returns:
+               str: The base name of the image file.
+           """
         file_name = self.image.name
         split_name = file_name.split("/")
         new_name = split_name[-1]
         return new_name
 
     def compress_image(self, quality, width, height):
+        """Compresses and saves the image with specified quality and dimensions.
+
+         Opens the image, applies thumbnail resizing if width and height are provided, and compresses it.
+         Saves the image in JPEG format unless the original format is JPEG. Also handles RGBA to RGB
+         conversion for non-PNG images.
+
+         Args:
+             quality (int): Compression quality level.
+             width (int or None): New width for the image, if provided.
+             height (int or None): New height for the image, if provided.
+         """
         image = Image.open(self.image)
         if width and height:
             image.thumbnail((int(width), int(height)))

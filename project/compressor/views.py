@@ -17,6 +17,17 @@ stripe.api_key = STRIPE_KEY
 
 
 def index(request):
+    """Handles GET and POST for image compressor index.
+
+        POST: Processes image upload form. Saves image and performs checks.
+        GET: Provides empty form.
+
+        Args:
+            request (HttpRequest): The HTTP request.
+
+        Returns:
+            HttpResponse: Redirects on POST success or renders index on GET.
+        """
     if request.method == "POST":
         form = UploadImage(request.POST, request.FILES)
 
@@ -41,6 +52,17 @@ def index(request):
 
 
 def image_view(request, pk):
+    """Displays and processes image compression form.
+
+      Retrieves an image by pk. On POST, processes form and compresses image. On GET, displays form.
+
+      Args:
+          request (HttpRequest): The HTTP request.
+          pk (int): Primary key of the image to be processed.
+
+      Returns:
+          HttpResponse: Redirects to the image on successful POST, or renders image view on GET.
+      """
     my_image = UpImage.objects.get(pk=pk)
 
     if request.method == "POST":
@@ -67,6 +89,17 @@ def user_has_sub(user):
 
 @user_passes_test(user_has_sub, login_url="compressor:subscription")
 def premium_upload(request):
+    """Handles premium image uploads and processing for subscribed users.
+
+    On POST, processes multiple image uploads with optional compression. Deletes images with excluded formats.
+    Redirects based on compression setting. On GET, displays upload form.
+
+    Args:
+        request (HttpRequest): The HTTP request, containing user, image files, and optional compression settings.
+
+    Returns:
+        HttpResponse: Redirects to appropriate image list on POST, or renders upload form on GET.
+    """
     user = request.user
 
     if request.method == "POST":
@@ -96,6 +129,17 @@ def premium_upload(request):
 
 @user_passes_test(user_has_sub, login_url="compressor:subscription")
 def premium_images_view(request):
+    """Displays and processes premium image adjustments for subscribed users.
+
+     Retrieves user's non-archived images. On POST, applies compression to selected images and archives them.
+     On GET, displays images with modification options.
+
+     Args:
+         request (HttpRequest): The HTTP request, containing image modification data on POST.
+
+     Returns:
+         HttpResponse: Redirects to image list on successful POST, or renders image modification view on GET.
+     """
     user = request.user
     images = UpImage.objects.filter(user=user, archived=False)
 
