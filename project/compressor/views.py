@@ -9,7 +9,7 @@ from accounts.models import CustomUser
 
 from .models import UpImage
 from .forms import UploadImage, Compress, PremiumForm, PremiumDeleteForm
-from project.settings import STRIPE_KEY, STRIPE_PRICE_ID, AUTH_EXT
+from project.settings import STRIPE_KEY, STRIPE_PRICE_ID
 
 import stripe
 import os
