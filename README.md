@@ -2,12 +2,7 @@
 
 ## Refactoring à faire
 
-A l'époque où j'ai réalisé ce projet, je ne séparais pas encore la logique métier dans des méthodes et fonctions.
-Je dois prendre le temps de faire un refactoring sur ce projet.
-
-Mais désormais, je découpe la logique métier dans des méthodes.
-
-Je dois aussi repenser le côté sécurité que je n'appréhendais pas forcément de la bonne manière à l'époque de ce projet.
+Je dois repenser le côté sécurité que je n'appréhendais pas forcément de la bonne manière à l'époque de ce projet.
 Evidemment depuis je pense toujours au volet sécurité de mes apps.
 
 ## Résumé
